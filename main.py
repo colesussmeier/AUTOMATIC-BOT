@@ -397,7 +397,7 @@ if __name__ == "__main__":
         "test_questions",
     ], "Invalid run mode"
 
-
+    # CHANGE RESEARCH REPORTS
     bot = AUTOMATIC_BOT(
         research_reports_per_question=1,
         predictions_per_research_report=2,
