@@ -100,6 +100,10 @@ class AUTOMATIC_BOT(ForecastBot):
     ```
     Additionally OpenRouter has large rate limits immediately on account creation
     """
+    rate_limiter = RefreshingBucketRateLimiter(
+        capacity=2,
+        refresh_rate=1,
+    )
 
     _max_concurrent_questions = (
         1  # Set this to whatever works for your search-provider/ai-model rate limits
@@ -108,6 +112,7 @@ class AUTOMATIC_BOT(ForecastBot):
 
     async def run_research(self, question: MetaculusQuestion) -> str:
         async with self._concurrency_limiter:
+            await self.rate_limiter.wait_till_able_to_acquire_resources(1)
             research = ""
             researcher = self.get_llm("researcher")
 
