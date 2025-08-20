@@ -417,7 +417,7 @@ if __name__ == "__main__":
                 allowed_tries=2,
             ),
             "summarizer": "openrouter/openai/gpt-5",
-            "researcher": "asknews/deep-research/high",
+            "researcher": "asknews/deep-research/high-depth",
             "parser": "openrouter/openai/gpt-5-mini",
         },
     )
