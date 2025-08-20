@@ -143,8 +143,10 @@ class AUTOMATIC_BOT(ForecastBot):
                 research = await AskNewsSearcher().get_formatted_deep_research(
                     question.question_text,
                     sources=["asknews", "google"],
+                    model="deepseek-basic",
                     search_depth=2,
-                    max_depth=4,
+                    max_depth=2,
+                    return_sources=False
                 )
             elif researcher == "asknews/deep-research/high-depth":
                 research = await AskNewsSearcher().get_formatted_deep_research( # MAY HAVE TO PASS CLIENT/ SECRET TO THIS MANUALLY (source code uses os.env)
@@ -422,7 +424,7 @@ if __name__ == "__main__":
                 allowed_tries=2,
             ),
             "summarizer": "openrouter/openai/gpt-5-chat",
-            "researcher": "asknews/news-summaries",
+            "researcher": "asknews/medium-depth",
             "parser": "openrouter/openai/gpt-5-mini",
         },
     )
