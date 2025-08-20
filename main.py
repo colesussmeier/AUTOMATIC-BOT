@@ -399,7 +399,7 @@ if __name__ == "__main__":
 
 
     bot = AUTOMATIC_BOT(
-        research_reports_per_question=3,
+        research_reports_per_question=2,
         predictions_per_research_report=2,
         use_research_summary_to_forecast=False,
         publish_reports_to_metaculus=False,
@@ -458,7 +458,7 @@ if __name__ == "__main__":
         EXAMPLE_QUESTIONS = [
             "https://www.metaculus.com/c/diffusion-community/38880/how-many-us-labor-strikes-due-to-ai-in-2029/"
         ]
-        
+
         bot.skip_previously_forecasted_questions = False
         questions = [
             MetaculusApi.get_question_by_url(question_url)
