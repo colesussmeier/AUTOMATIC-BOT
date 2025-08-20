@@ -145,8 +145,7 @@ class AUTOMATIC_BOT(ForecastBot):
                     sources=["asknews", "google"],
                     model="deepseek-basic",
                     search_depth=2,
-                    max_depth=2,
-                    return_sources=False
+                    max_depth=2
                 )
             elif researcher == "asknews/deep-research/high-depth":
                 research = await AskNewsSearcher().get_formatted_deep_research( # MAY HAVE TO PASS CLIENT/ SECRET TO THIS MANUALLY (source code uses os.env)
