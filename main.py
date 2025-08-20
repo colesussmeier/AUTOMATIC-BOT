@@ -424,7 +424,7 @@ if __name__ == "__main__":
                 allowed_tries=2,
             ),
             "summarizer": "openrouter/openai/gpt-5-chat",
-            "researcher": "asknews/medium-depth",
+            "researcher": "asknews/deep-research/medium-depth",
             "parser": "openrouter/openai/gpt-5-mini",
         },
     )
