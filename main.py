@@ -407,7 +407,7 @@ if __name__ == "__main__":
         skip_previously_forecasted_questions=True,
         llms={  # choose your model names or GeneralLlm llms here, otherwise defaults will be chosen for you
             "default": GeneralLlm(
-                model="openrouter/openai/gpt-5", #HIGH??  gpt5 requires its own api in openrouter? openrouter.ai/openai/gpt-5/api
+                model="openrouter/openai/o3", #HIGH??  gpt5 requires its own api in openrouter? openrouter.ai/openai/gpt-5/api
                 timeout=60,
                 allowed_tries=2,
             ),
@@ -416,7 +416,7 @@ if __name__ == "__main__":
                 timeout=60,
                 allowed_tries=2,
             ),
-            "summarizer": "openrouter/openai/gpt-5",
+            "summarizer": "openrouter/openai/gpt-5-chat",
             "researcher": "asknews/deep-research/high-depth",
             "parser": "openrouter/openai/gpt-5-mini",
         },
