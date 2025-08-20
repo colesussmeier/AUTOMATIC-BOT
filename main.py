@@ -405,7 +405,7 @@ if __name__ == "__main__":
 
     # CHANGE RESEARCH REPORTS
     bot = AUTOMATIC_BOT(
-        research_reports_per_question=1,
+        research_reports_per_question=2,
         predictions_per_research_report=2,
         use_research_summary_to_forecast=False,
         publish_reports_to_metaculus=False,
@@ -416,6 +416,7 @@ if __name__ == "__main__":
                 model="openrouter/openai/gpt-5", #HIGH??  gpt5 requires its own api in openrouter? openrouter.ai/openai/gpt-5/api
                 timeout=60,
                 allowed_tries=2,
+                reasoning_effort="high"
             ),
             "grok-4": GeneralLlm(
                 model="openrouter/xai/grok-4",
@@ -462,7 +463,7 @@ if __name__ == "__main__":
         """
 
         EXAMPLE_QUESTIONS = [
-            "https://www.metaculus.com/c/diffusion-community/38880/how-many-us-labor-strikes-due-to-ai-in-2029/"
+            "https://www.metaculus.com/questions/22427/number-of-new-leading-ai-labs/"
         ]
 
         bot.skip_previously_forecasted_questions = False
