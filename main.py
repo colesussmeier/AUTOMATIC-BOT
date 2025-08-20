@@ -18,9 +18,9 @@ from forecasting_tools import (
     BinaryPrediction,
     PredictedOptionList,
     ReasonedPrediction,
-    SmartSearcher,
     clean_indents,
     structure_output,
+    RefreshingBucketRateLimiter
 )
 
 logger = logging.getLogger(__name__)
@@ -399,7 +399,7 @@ if __name__ == "__main__":
 
 
     bot = AUTOMATIC_BOT(
-        research_reports_per_question=2,
+        research_reports_per_question=1,
         predictions_per_research_report=2,
         use_research_summary_to_forecast=False,
         publish_reports_to_metaculus=False,
