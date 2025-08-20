@@ -1,0 +1,15 @@
+[project]
+name = "metaculus-bot"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "asknews>=0.11.25",
+    "forecasting-tools>=0.2.54",
+    "numpy>=2.3.2",
+    "openai>=1.99.8",
+    "python-decouple>=3.8",
+    "python-dotenv>=1.1.1",
+    "requests>=2.32.4",
+]
