@@ -150,7 +150,7 @@ class AUTOMATIC_BOT(ForecastBot):
             elif researcher == "asknews/deep-research/high-depth":
                 research = await AskNewsSearcher().get_formatted_deep_research( # MAY HAVE TO PASS CLIENT/ SECRET TO THIS MANUALLY (source code uses os.env)
                     question.question_text,
-                    sources=["asknews", "google"],
+                    sources=["asknews", "google"], # cant sources other than asknews for metaculus tier
                     search_depth=4,
                     max_depth=6,
                     model="o3" # CHECK: https://docs.asknews.app/en/deepnews
@@ -416,14 +416,15 @@ if __name__ == "__main__":
                 model="openrouter/openai/gpt-5", #HIGH??  gpt5 requires its own api in openrouter? openrouter.ai/openai/gpt-5/api
                 timeout=60,
                 allowed_tries=2,
-                reasoning_effort="high"
+                reasoning_effort="high",
+                verbosity="high"
             ),
             "grok-4": GeneralLlm(
                 model="openrouter/xai/grok-4",
                 timeout=60,
                 allowed_tries=2,
             ),
-            "summarizer": "openrouter/openai/gpt-5-chat",
+            "summarizer": "openrouter/openai/gpt-5",
             "researcher": "asknews/deep-research/medium-depth",
             "parser": "openrouter/openai/gpt-5-mini",
         },
