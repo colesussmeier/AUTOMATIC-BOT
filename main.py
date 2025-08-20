@@ -142,7 +142,7 @@ class AUTOMATIC_BOT(ForecastBot):
             elif researcher == "asknews/deep-research/medium-depth":
                 research = await AskNewsSearcher().get_formatted_deep_research(
                     question.question_text,
-                    sources=["asknews", "google"],
+                    sources=["asknews"],
                     model="deepseek-basic",
                     search_depth=2,
                     max_depth=2
