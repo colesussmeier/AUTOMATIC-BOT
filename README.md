@@ -16,7 +16,7 @@ Based on example questions I've seen, using the Adjacent search function will on
 
 2. Filter responses such that only active markets are returned (end_date > todays date)
 
-3. Maybe filter by volume/ oi if its really low (>1000? 5000?)
+3. Filter by volume/ oi if its too low
 
 4. Only return relevant info of relevant markets
 
@@ -38,3 +38,5 @@ Based on example questions I've seen, using the Adjacent search function will on
 - The few-dependency version of the bot provided by Metaculus did not handle generating distributions / extracting predictions the same way the default one does (default uses forecasting-tools and an llm call which I think is easier and probably better)
 
 - Not sure how quickly I'll run out of credits yet. I'll have to test this over the next week or so
+
+- if o3‑deep‑research works as a research agent it wont need asknews
