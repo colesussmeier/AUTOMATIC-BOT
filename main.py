@@ -160,8 +160,6 @@ class AUTOMATIC_BOT(ForecastBot):
                 research = ""
             else:
                 research = await self.get_llm("researcher", "llm").invoke(prompt)
-            logger.info(f"Found Research for URL {question.page_url}:\n{research}")
-
 
 
             prediction_market_query_generation_prompt = clean_indents(
@@ -187,6 +185,8 @@ class AUTOMATIC_BOT(ForecastBot):
             search_assistant = self.get_llm("mini")
 
             general_query = await search_assistant.invoke(prediction_market_query_generation_prompt)
+
+            logger.info(f"Searching prediction markets for: {general_query}")
 
             try:
                 async with PredictionMarketSearchClient() as client:
@@ -232,6 +232,9 @@ class AUTOMATIC_BOT(ForecastBot):
                     """
             except Exception as e:
                 logger.warning(f"Failed to fetch prediction market data for question '{question.question_text}': {e}")
+
+            
+            logger.info(f"Found Research for URL {question.page_url}:\n{research}")
             
             return research
 
@@ -540,7 +543,7 @@ if __name__ == "__main__":
         """
 
         EXAMPLE_QUESTIONS = [
-            "https://www.metaculus.com/questions/22427/number-of-new-leading-ai-labs/"
+            "https://www.metaculus.com/c/diffusion-community/38880/how-many-us-labor-strikes-due-to-ai-in-2029/"
         ]
 
         bot.skip_previously_forecasted_questions = False
