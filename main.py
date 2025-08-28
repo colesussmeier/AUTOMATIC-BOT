@@ -3,6 +3,7 @@ import asyncio
 import logging
 from datetime import datetime
 from typing import Literal
+from search_prediction_markets import PredictionMarketSearchClient
 
 from forecasting_tools import (
     AskNewsSearcher,
@@ -162,11 +163,76 @@ class AUTOMATIC_BOT(ForecastBot):
             logger.info(f"Found Research for URL {question.page_url}:\n{research}")
 
 
-            # ==========================================
 
-            # Add call to adjacent news. Pass question, or related queries to search api, and then filter by date/ volume
+            prediction_market_query_generation_prompt = clean_indents(
+                f"""
+                You are a search assistant for a superforecaster.
+                You will take the following question, and return a single query that would be the most useful in finding prediction markets that are related to the question.
+                This query will use semantic search across multiple markets, so think about what general topic that having probabilities for would maximize information gain. 
+                For example, say the question asks about what companies will have the best LLMs this year-- You would return "Best AI".
+                
+                Here is your task:
 
-            # ==========================================
+                Question:
+                {question.question_text}
+
+                This question's outcome will be determined by the specific criteria below:
+                {question.resolution_criteria}
+
+                {question.fine_print}
+                """
+            )
+
+
+            search_assistant = self.get_llm("mini")
+
+            general_query = await search_assistant.invoke(prediction_market_query_generation_prompt)
+
+            try:
+                async with PredictionMarketSearchClient() as client:
+                    await client.search_prediction_markets(question.question_text, 10000, is_first_search=True) # results stored in an instance variable
+                    search_results = await client.search_prediction_markets(general_query, 10000, is_first_search=False)
+
+                    search_refinement_prompt = clean_indents(
+                    f"""
+                    You are a search assistant for a superforecaster.
+                    You will be given a question, and a set of search results from prediction markets. These results are useful because the prediction markets tell us the probabality of a particular event occuring.
+                    Your job is to determine what markets are the most relavent to the question.
+                    If none are relevant, your response will be "No markets found". For any market that is relevant, include it in your response as normal text. Format it in a way that is easy for a research analyst to parse.
+
+                    Question:
+                    {question.question_text}
+
+                    This question's outcome will be determined by the specific criteria below:
+                    {question.resolution_criteria}
+
+                    {question.fine_print}
+
+                    
+
+                    Here are the results from Polymarket, Kalshi, and Metaculus:
+                    {search_results[0]}
+
+
+                    Here are the results from Manifold:
+                    {search_results[1]}
+                    """
+                    )
+
+                    prediction_market_results = await search_assistant.invoke(search_refinement_prompt)
+
+                    research = f"""
+                        {research}
+
+                        ===========================================
+                        
+                        ##Potentially useful prediction market data
+
+                        {prediction_market_results}
+                    """
+            except Exception as e:
+                logger.warning(f"Failed to fetch prediction market data for question '{question.question_text}': {e}")
+            
             return research
 
     async def _run_forecast_on_binary(
@@ -418,6 +484,16 @@ if __name__ == "__main__":
                 allowed_tries=2,
                 reasoning_effort="high",
                 verbosity="high"
+            ),
+            "mini": GeneralLlm(
+                model="openrouter/openai/gpt-5-mini",
+                timeout=60,
+                allowed_tries=2,
+                reasoning_effort="high"
+            ),
+            "o3-deep": GeneralLlm(
+                model="openrouter/openai/o3-deep-research",
+                timeout=360
             ),
             "grok-4": GeneralLlm(
                 model="openrouter/xai/grok-4",
