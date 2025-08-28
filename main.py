@@ -224,9 +224,9 @@ class AUTOMATIC_BOT(ForecastBot):
                     research = f"""
                         {research}
 
-                        ===========================================
+                        \n===========================================
                         
-                        ##Potentially useful prediction market data
+                        **Potentially useful prediction market data**
 
                         {prediction_market_results}
                     """
@@ -543,7 +543,7 @@ if __name__ == "__main__":
         """
 
         EXAMPLE_QUESTIONS = [
-            "https://www.metaculus.com/c/diffusion-community/38880/how-many-us-labor-strikes-due-to-ai-in-2029/"
+            "https://www.metaculus.com/questions/22427/number-of-new-leading-ai-labs/"
         ]
 
         bot.skip_previously_forecasted_questions = False

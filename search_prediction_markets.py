@@ -44,7 +44,7 @@ class PredictionMarketSearchClient:
     async def adjacent_semantic_search(
             self, 
             query: str, 
-            limit: Optional[int] = 100,
+            limit: Optional[int] = 25,
             include_context: Optional[bool] = False,
             filter_future_only: Optional[bool] = True,
             minimum_volume: Optional[float] = None
@@ -107,8 +107,8 @@ class PredictionMarketSearchClient:
                         print(f"Warning: Skipping market due to date parsing error: {e}")
                         continue
                 
-                # Get at most 20 markets
-                return filtered_data[:20]
+                # Get at most 10 markets
+                return filtered_data[:10]
                 
         except Exception as e:
             print(f"Error filtering markets: {e}")
