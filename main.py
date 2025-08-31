@@ -4,6 +4,7 @@ import logging
 from datetime import datetime
 from typing import Literal
 from search_prediction_markets import PredictionMarketSearchClient
+from deep_research import call_deep_research
 
 from forecasting_tools import (
     AskNewsSearcher,
@@ -111,6 +112,21 @@ class AUTOMATIC_BOT(ForecastBot):
     )
     _concurrency_limiter = asyncio.Semaphore(_max_concurrent_questions)
 
+    async def _should_use_deep_research(self, question: MetaculusQuestion) -> bool:
+        """Check if deep research should be used for this question"""
+        notepad = await self._get_notepad(question)
+        # Use deep research only once per question (on the first prediction)
+        if "deep_research_used" not in notepad.note_entries:
+            notepad.note_entries["deep_research_used"] = False
+        
+        if not notepad.note_entries["deep_research_used"]:
+            notepad.note_entries["deep_research_used"] = True
+            logger.info(f"Using deep research for question: {question.page_url}")
+            return True
+        else:
+            logger.info(f"Skipping deep research (already used) for question: {question.page_url}")
+        return False
+
     async def run_research(self, question: MetaculusQuestion) -> str:
         async with self._concurrency_limiter:
             await self.rate_limiter.wait_till_able_to_acquire_resources(1)
@@ -168,6 +184,7 @@ class AUTOMATIC_BOT(ForecastBot):
                 You will take the following question, and return a single query that would be the most useful in finding prediction markets that are related to the question.
                 This query will use semantic search across multiple markets, so think about what general topic that having probabilities for would maximize information gain. 
                 For example, say the question asks about what companies will have the best LLMs this year-- You would return "Best AI".
+                An exact search is already being done, so make your search more general.
                 
                 Here is your task:
 
@@ -199,6 +216,7 @@ class AUTOMATIC_BOT(ForecastBot):
                     You will be given a question, and a set of search results from prediction markets. These results are useful because the prediction markets tell us the probabality of a particular event occuring.
                     Your job is to determine what markets are the most relavent to the question.
                     If none are relevant, your response will be "No markets found". For any market that is relevant, include it in your response as normal text. Format it in a way that is easy for a research analyst to parse.
+                    If a contract is nearly identical to the current question, flag it as very important.
 
                     Question:
                     {question.question_text}
@@ -227,6 +245,8 @@ class AUTOMATIC_BOT(ForecastBot):
                         \n===========================================
                         
                         **Potentially useful prediction market data**
+
+                        * Note that all proabilities are between 0 and 100, not 0 and 1. Volume can be an indication of accuracy/ market confidence, except for Metaculus questions where volume is always 0.
 
                         {prediction_market_results}
                     """
@@ -274,7 +294,10 @@ class AUTOMATIC_BOT(ForecastBot):
             The last thing you write is your final answer as: "Probability: ZZ%", 0-100
             """
         )
-        reasoning = await self.get_llm("default", "llm").invoke(prompt)
+        if await self._should_use_deep_research(question):
+            reasoning = await call_deep_research(question=question, type="binary")
+        else:
+            reasoning = await self.get_llm("default", "llm").invoke(prompt)
         logger.info(f"Reasoning for URL {question.page_url}: {reasoning}")
         binary_prediction: BinaryPrediction = await structure_output(
             reasoning, BinaryPrediction, model=self.get_llm("parser", "llm")
@@ -333,7 +356,10 @@ class AUTOMATIC_BOT(ForecastBot):
             The text you are parsing may prepend these options with some variation of "Option" which you should remove if not part of the option names I just gave you.
             """
         )
-        reasoning = await self.get_llm("default", "llm").invoke(prompt)
+        if await self._should_use_deep_research(question):
+            reasoning = await call_deep_research(question=question, type="multiple_choice")
+        else:
+            reasoning = await self.get_llm("default", "llm").invoke(prompt)
         logger.info(f"Reasoning for URL {question.page_url}: {reasoning}")
         predicted_option_list: PredictedOptionList = await structure_output(
             text_to_structure=reasoning,
@@ -404,7 +430,10 @@ class AUTOMATIC_BOT(ForecastBot):
             "
             """
         )
-        reasoning = await self.get_llm("default", "llm").invoke(prompt)
+        if await self._should_use_deep_research(question):
+            reasoning = await call_deep_research(question=question, type="numeric", lower_bound=lower_bound_message, upper_bound=upper_bound_message)
+        else:
+            reasoning = await self.get_llm("default", "llm").invoke(prompt)
         logger.info(f"Reasoning for URL {question.page_url}: {reasoning}")
         percentile_list: list[Percentile] = await structure_output(
             reasoning, list[Percentile], model=self.get_llm("parser", "llm")
@@ -497,11 +526,6 @@ if __name__ == "__main__":
             "o3-deep": GeneralLlm(
                 model="openrouter/openai/o3-deep-research",
                 timeout=360
-            ),
-            "grok-4": GeneralLlm(
-                model="openrouter/xai/grok-4",
-                timeout=60,
-                allowed_tries=2,
             ),
             "summarizer": "openrouter/openai/gpt-5",
             "researcher": "asknews/deep-research/medium-depth",
