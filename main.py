@@ -185,6 +185,7 @@ class AUTOMATIC_BOT(ForecastBot):
                 This query will use semantic search across multiple markets, so think about what general topic that having probabilities for would maximize information gain. 
                 For example, say the question asks about what companies will have the best LLMs this year-- You would return "Best AI".
                 An exact search is already being done, so make your search more general.
+                Your search should be less than 5 words.
                 
                 Here is your task:
 
