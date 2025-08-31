@@ -29,13 +29,13 @@ async def call_deep_research(question: str, type: str, lower_bound: str = None, 
         ],
     )
 
-    while response.status in {"queued", "in_progress"}:
-        print(f"Current status: {response.status}")
-        await asyncio.sleep(2)
-        response = await client.responses.retrieve(response.id)
+    response = f"""
+    <<<DEEP RESEARCH>>>
 
-    print(f"Final status: {response.status}\nOutput:\n{response.output_text}")
-    return response.output_text
+    {response.output_text}
+    """
+    
+    return response
 
 
 def format_prompt(question: str, type: str, lower_bound: str = None, upper_bound: str = None) -> str:

@@ -213,10 +213,11 @@ class AUTOMATIC_BOT(ForecastBot):
                     search_refinement_prompt = clean_indents(
                     f"""
                     You are a search assistant for a superforecaster.
-                    You will be given a question, and a set of search results from prediction markets. These results are useful because the prediction markets tell us the probabality of a particular event occuring.
-                    Your job is to determine what markets are the most relavent to the question.
+                    You will be given a question, and a set of search results from prediction markets. These results are useful because the prediction markets tell us the probabality of particular events occuring.
+                    Your job is to determine what markets are the most relavent to the question below.
                     If none are relevant, your response will be "No markets found". For any market that is relevant, include it in your response as normal text. Format it in a way that is easy for a research analyst to parse.
-                    If a contract is nearly identical to the current question, flag it as very important.
+                    If a market is nearly identical to the current question, flag it as very important.
+                    Do not provide your interpretation of these numbers, only provide the formatted data that could be important to consider when answering this question. Do not ask any follow-up questions.
 
                     Question:
                     {question.question_text}
@@ -522,10 +523,6 @@ if __name__ == "__main__":
                 timeout=60,
                 allowed_tries=2,
                 reasoning_effort="high"
-            ),
-            "o3-deep": GeneralLlm(
-                model="openrouter/openai/o3-deep-research",
-                timeout=360
             ),
             "summarizer": "openrouter/openai/gpt-5",
             "researcher": "asknews/deep-research/medium-depth",
