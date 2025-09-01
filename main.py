@@ -248,7 +248,7 @@ class AUTOMATIC_BOT(ForecastBot):
                         
                         **Potentially useful prediction market data**
 
-                        * Note that all proabilities are between 0 and 100, not 0 and 1. Volume can be an indication of accuracy/ market confidence, except for Metaculus questions where volume is always 0.
+                        * Note that all probabilities are between 0 and 100, not 0 and 1. Volume can be an indication of accuracy/ market confidence, except for Metaculus questions where volume is always 0.
 
                         {prediction_market_results}
                     """
