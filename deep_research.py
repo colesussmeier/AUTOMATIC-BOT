@@ -18,7 +18,7 @@ async def call_deep_research(question: str, type: str, lower_bound: str = None, 
     prompt = format_prompt(question, type, lower_bound, upper_bound)
 
     response = await client.responses.create(
-        model="o4-mini-deep-research",
+        model="o3-deep-research",
         input=prompt,
         tools=[
             {"type": "web_search_preview"},
