@@ -509,7 +509,7 @@ if __name__ == "__main__":
         predictions_per_research_report=2,
         use_research_summary_to_forecast=False,
         publish_reports_to_metaculus=True,
-        folder_to_save_reports_to="/reports/",
+        folder_to_save_reports_to="reports/",
         skip_previously_forecasted_questions=True,
         llms={  # choose your model names or GeneralLlm llms here, otherwise defaults will be chosen for you
             "default": GeneralLlm(
