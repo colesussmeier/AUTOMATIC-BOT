@@ -545,7 +545,7 @@ if __name__ == "__main__":
                 reasoning_effort="high"
             ),
             "summarizer": "openrouter/openai/gpt-5",
-            "researcher": "asknews/deep-research/medium-depth",
+            "researcher": "asknews/deep-research/high-depth",
             "parser": "openrouter/openai/gpt-5-mini",
         },
     )
