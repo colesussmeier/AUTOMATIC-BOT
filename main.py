@@ -185,7 +185,7 @@ class AUTOMATIC_BOT(ForecastBot):
                 )
             elif researcher == "asknews/deep-research/high-depth":
                 research = await AskNewsSearcher().get_formatted_deep_research(
-                    question.question_text,
+                    prompt,
                     sources=["asknews", "google", "x"],
                     search_depth=3,
                     max_depth=6,
