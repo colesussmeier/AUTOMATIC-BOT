@@ -236,8 +236,8 @@ class AUTOMATIC_BOT(ForecastBot):
                     You will be given a question, and a set of search results from prediction markets. These results are useful because the prediction markets tell us the probabality of particular events occuring.
                     Your job is to determine what markets are the most relavent to the question below.
                     If none are relevant, your response will be "No markets found". For any market that is relevant, include it in your response as normal text. Format it in a way that is easy for a research analyst to parse.
-                    If a market is nearly identical to the current question, flag it as very important.
-                    Do not provide your interpretation of these numbers, only provide the formatted data that could be important to consider when answering this question. Do not ask any follow-up questions.
+                    If a market is nearly identical to the current question, flag it as very important. If this market comes from Metaculus and has a probability of 0-- that's because its the same question and predictions have not been made on it yet so ignore this case.
+                    Do not provide your interpretation of these numbers, only provide the formatted data that could be important to consider when answering this question. DO NOT ASK ANY FOLLOW-UP QUESTIONS.
 
                     Question:
                     {question.question_text}
