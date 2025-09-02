@@ -148,12 +148,19 @@ class AUTOMATIC_BOT(ForecastBot):
         
         # First time using deep research - run it and cache the result
         if not notepad.note_entries.get("deep_research_used", False):
-            notepad.note_entries["deep_research_used"] = True
-            notepad.note_entries["deep_research_count"] = 1
-            result = await call_deep_research(question=question, type=question_type, lower_bound=lower_bound, upper_bound=upper_bound)
-            notepad.note_entries["deep_research_result"] = result
-            logger.info(f"Using deep research for question: {question.page_url}")
-            return result, True
+            try:
+                logger.info(f"Starting deep research for question: {question.page_url}")
+                result = await call_deep_research(question=question, type=question_type, lower_bound=lower_bound, upper_bound=upper_bound)
+                # Only update notepad after successful completion
+                notepad.note_entries["deep_research_used"] = True
+                notepad.note_entries["deep_research_count"] = 1
+                notepad.note_entries["deep_research_result"] = result
+                logger.info(f"Successfully completed deep research for question: {question.page_url}")
+                return result, True
+            except Exception as e:
+                logger.error(f"Deep research failed for question {question.page_url}: {str(e)}")
+                # Don't set deep_research_used to True if it failed
+                return "", False
             
         return "", False
 
