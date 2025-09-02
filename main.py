@@ -131,38 +131,20 @@ class AUTOMATIC_BOT(ForecastBot):
         
         return base_defaults
 
-    async def _get_or_reuse_deep_research(self, question: MetaculusQuestion, question_type: str, lower_bound: str = None, upper_bound: str = None) -> tuple[str, bool]:
-        """Get deep research result, either fresh or reused to give it double weight"""
+    async def _should_use_deep_research(self, question: MetaculusQuestion) -> bool:
+        """Check if deep research should be used for this question"""
         notepad = await self._get_notepad(question)
-        if "deep_research_count" not in notepad.note_entries:
-            notepad.note_entries["deep_research_count"] = 0
-            
-        # If deep research was used and we haven't duplicated yet, reuse the cached result
-        if (notepad.note_entries.get("deep_research_used", False) and 
-            notepad.note_entries["deep_research_count"] < 2 and
-            "deep_research_result" in notepad.note_entries):
-            notepad.note_entries["deep_research_count"] += 1
-            cached_result = notepad.note_entries["deep_research_result"]
-            logger.info(f"Reusing deep research result for double weight: {question.page_url}")
-            return cached_result, True
+        # Use deep research only once per question (on the first prediction)
+        if "deep_research_used" not in notepad.note_entries:
+            notepad.note_entries["deep_research_used"] = False
         
-        # First time using deep research - run it and cache the result
-        if not notepad.note_entries.get("deep_research_used", False):
-            try:
-                logger.info(f"Starting deep research for question: {question.page_url}")
-                result = await call_deep_research(question=question, type=question_type, lower_bound=lower_bound, upper_bound=upper_bound)
-                # Only update notepad after successful completion
-                notepad.note_entries["deep_research_used"] = True
-                notepad.note_entries["deep_research_count"] = 1
-                notepad.note_entries["deep_research_result"] = result
-                logger.info(f"Successfully completed deep research for question: {question.page_url}")
-                return result, True
-            except Exception as e:
-                logger.error(f"Deep research failed for question {question.page_url}: {str(e)}")
-                # Don't set deep_research_used to True if it failed
-                return "", False
-            
-        return "", False
+        if not notepad.note_entries["deep_research_used"]:
+            notepad.note_entries["deep_research_used"] = True
+            logger.info(f"Using deep research for question: {question.page_url}")
+            return True
+        else:
+            logger.info(f"Skipping deep research (already used) for question: {question.page_url}")
+        return False
 
     async def run_research(self, question: MetaculusQuestion) -> str:
         async with self._concurrency_limiter:
@@ -254,8 +236,8 @@ class AUTOMATIC_BOT(ForecastBot):
                     You will be given a question, and a set of search results from prediction markets. These results are useful because the prediction markets tell us the probabality of particular events occuring.
                     Your job is to determine what markets are the most relavent to the question below.
                     If none are relevant, your response will be "No markets found". For any market that is relevant, include it in your response as normal text. Format it in a way that is easy for a research analyst to parse.
-                    If a market is nearly identical to the current question, flag it as very important. If this market comes from Metaculus and has a probability of 0-- that's because its the same question and predictions have not been made on it yet so ignore this case.
-                    Do not provide your interpretation of these numbers, only provide the formatted data that could be important to consider when answering this question. DO NOT ASK ANY FOLLOW-UP QUESTIONS.
+                    If a market is nearly identical to the current question, flag it as very important.
+                    Do not provide your interpretation of these numbers, only provide the formatted data that could be important to consider when answering this question. Do not ask any follow-up questions.
 
                     Question:
                     {question.question_text}
@@ -333,9 +315,8 @@ class AUTOMATIC_BOT(ForecastBot):
             The last thing you write is your final answer as: "Probability: ZZ%", 0-100
             """
         )
-        deep_research_result, used_deep_research = await self._get_or_reuse_deep_research(question, "binary")
-        if used_deep_research:
-            reasoning = deep_research_result
+        if await self._should_use_deep_research(question):
+            reasoning = await call_deep_research(question=question, type="binary")
         else:
             reasoning = await self.get_llm("default", "llm").invoke(prompt)
         logger.info(f"Reasoning for URL {question.page_url}: {reasoning}")
@@ -396,9 +377,8 @@ class AUTOMATIC_BOT(ForecastBot):
             The text you are parsing may prepend these options with some variation of "Option" which you should remove if not part of the option names I just gave you.
             """
         )
-        deep_research_result, used_deep_research = await self._get_or_reuse_deep_research(question, "multiple_choice")
-        if used_deep_research:
-            reasoning = deep_research_result
+        if await self._should_use_deep_research(question):
+            reasoning = await call_deep_research(question=question, type="multiple_choice")
         else:
             reasoning = await self.get_llm("default", "llm").invoke(prompt)
         logger.info(f"Reasoning for URL {question.page_url}: {reasoning}")
@@ -471,9 +451,8 @@ class AUTOMATIC_BOT(ForecastBot):
             "
             """
         )
-        deep_research_result, used_deep_research = await self._get_or_reuse_deep_research(question, "numeric", lower_bound_message, upper_bound_message)
-        if used_deep_research:
-            reasoning = deep_research_result
+        if await self._should_use_deep_research(question):
+            reasoning = await call_deep_research(question=question, type="numeric", lower_bound=lower_bound_message, upper_bound=upper_bound_message)
         else:
             reasoning = await self.get_llm("default", "llm").invoke(prompt)
         logger.info(f"Reasoning for URL {question.page_url}: {reasoning}")
@@ -546,7 +525,7 @@ if __name__ == "__main__":
     # CHANGE RESEARCH REPORTS
     bot = AUTOMATIC_BOT(
         research_reports_per_question=2,
-        predictions_per_research_report=3,
+        predictions_per_research_report=2,
         use_research_summary_to_forecast=False,
         publish_reports_to_metaculus=True,
         folder_to_save_reports_to="reports/",
