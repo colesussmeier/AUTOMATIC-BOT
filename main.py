@@ -545,7 +545,15 @@ if __name__ == "__main__":
                 reasoning_effort="high"
             ),
             "summarizer": "openrouter/openai/gpt-5",
-            "researcher": "asknews/deep-research/medium-depth",
+            "researcher": GeneralLlm(
+                model="openrouter/openai/gpt-5",
+                timeout=60,
+                allowed_tries=2,
+                reasoning_effort="high",
+                tools=[
+                    {"type": "web_search"},
+                ],
+            ),
             "parser": "openrouter/openai/gpt-5-mini",
         },
     )
