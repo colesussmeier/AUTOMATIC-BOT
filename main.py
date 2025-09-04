@@ -309,6 +309,7 @@ class AUTOMATIC_BOT(ForecastBot):
             (b) The status quo outcome if nothing changed.
             (c) A brief description of a scenario that results in a No outcome.
             (d) A brief description of a scenario that results in a Yes outcome.
+            (e) How your conclusion relates to current prediction market odds, if at all (markets may not be provided). Otherwise, what research was most important to your conclusion?
 
             You write your rationale remembering that good forecasters put extra weight on the status quo outcome since the world changes slowly most of the time.
 
@@ -360,6 +361,7 @@ class AUTOMATIC_BOT(ForecastBot):
             (a) The time left until the outcome to the question is known.
             (b) The status quo outcome if nothing changed.
             (c) A description of an scenario that results in an unexpected outcome.
+            (d) How your conclusion relates to current prediction market odds, if at all (markets may not be provided). Otherwise, what research was most important to your conclusion?
 
             You write your rationale remembering that (1) good forecasters put extra weight on the status quo outcome since the world changes slowly most of the time, and (2) good forecasters leave some moderate probability on most options to account for unexpected outcomes.
 
@@ -437,6 +439,7 @@ class AUTOMATIC_BOT(ForecastBot):
             (d) The expectations of experts and markets.
             (e) A brief description of an unexpected scenario that results in a low outcome.
             (f) A brief description of an unexpected scenario that results in a high outcome.
+            (g) How your conclusion relates to current prediction market odds, if at all (markets may not be provided). Otherwise, what research was most important to your conclusion?
 
             You remind yourself that good forecasters are humble and set wide 90/10 confidence intervals to account for unknown unknowns.
 
