@@ -157,7 +157,7 @@ class AUTOMATIC_BOT(ForecastBot):
                 You are an assistant to a superforecaster.
                 The superforecaster will give you a question they intend to forecast on.
                 To be a great assistant, you generate a concise but detailed rundown of the most relevant news, including if the question would resolve Yes or No based on current information.
-                You do not produce forecasts yourself.
+                You do not produce forecasts yourself, you do the research that the forecaster will need to come to a conclusion.
 
                 Question:
                 {question.question_text}
@@ -545,7 +545,7 @@ if __name__ == "__main__":
                 reasoning_effort="high"
             ),
             "summarizer": "openrouter/openai/gpt-5",
-            "researcher": "asknews/deep-research/high-depth",
+            "researcher": "asknews/deep-research/medium-depth",
             "parser": "openrouter/openai/gpt-5-mini",
         },
     )
