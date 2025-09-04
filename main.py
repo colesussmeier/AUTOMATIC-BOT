@@ -141,7 +141,7 @@ class AUTOMATIC_BOT(ForecastBot):
         if not notepad.note_entries["deep_research_used"]:
             notepad.note_entries["deep_research_used"] = True
             logger.info(f"Using deep research for question: {question.page_url}")
-            return True
+            return False ### CHANGE BACK TO TRUE TO TURN ON DEEP RESEARCH!!!!!!!
         else:
             logger.info(f"Skipping deep research (already used) for question: {question.page_url}")
         return False
