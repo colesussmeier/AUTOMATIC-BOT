@@ -5,15 +5,7 @@ import requests
 
 load_dotenv()
 
-client_id = os.getenv('ASKNEWS_CLIENT_ID')
-client_secret = os.getenv('ASKNEWS_SECRET')
-
 openrouter = os.getenv('OPENROUTER_API_KEY')
-
-ask = AskNewsSDK(
-    client_id=client_id,
-    client_secret=client_secret
-)
 
 
 def test_basic_news():
