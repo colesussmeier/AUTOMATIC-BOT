@@ -44,7 +44,7 @@ class PredictionMarketSearchClient:
     async def adjacent_semantic_search(
             self, 
             query: str, 
-            limit: Optional[int] = 25,
+            limit: Optional[int] = 30,
             include_context: Optional[bool] = False,
             filter_future_only: Optional[bool] = True,
             minimum_volume: Optional[float] = None

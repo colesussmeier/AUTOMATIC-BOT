@@ -104,8 +104,10 @@ class AUTOMATIC_BOT(ForecastBot):
     """
     rate_limiter = RefreshingBucketRateLimiter(
         capacity=2,
-        refresh_rate=1,
+        refresh_rate=2,
     )
+
+    deep_research_results = {}
 
     _max_concurrent_questions = (
         1  # Set this to whatever works for your search-provider/ai-model rate limits
@@ -134,7 +136,7 @@ class AUTOMATIC_BOT(ForecastBot):
     async def _should_use_deep_research(self, question: MetaculusQuestion) -> bool:
         """Check if deep research should be used for this question"""
         notepad = await self._get_notepad(question)
-        # Use deep research only once per question (on the first prediction)
+        # Run deep research only once per question (on the first prediction)
         if "deep_research_used" not in notepad.note_entries:
             notepad.note_entries["deep_research_used"] = False
         
@@ -143,8 +145,23 @@ class AUTOMATIC_BOT(ForecastBot):
             logger.info(f"Using deep research for question: {question.page_url}")
             return True
         else:
-            logger.info(f"Skipping deep research (already used) for question: {question.page_url}")
+            logger.info(f"Skipping deep research run (already used) for question: {question.page_url}")
         return False
+    
+    async def _should_apply_deep_research(self, question: MetaculusQuestion) -> bool:
+        notepad = await self._get_notepad(question)
+
+        # apply deep research answer to the result every 3 steps (where 3 is the number of research reports)
+        if "research_steps_count" not in notepad.note_entries:
+            notepad.note_entries["research_steps_count"] = 1
+            return False
+        elif notepad.note_entries["research_steps_count"] % 3 == 0:
+            logger.info(f"Applying deep researcg results for {notepad.note_entries["research_steps_count"]}")
+            notepad.note_entries["research_steps_count"] += 1
+            return True
+        else:
+            notepad.note_entries["research_steps_count"] += 1
+            return False
 
     async def run_research(self, question: MetaculusQuestion) -> str:
         async with self._concurrency_limiter:
@@ -318,8 +335,12 @@ class AUTOMATIC_BOT(ForecastBot):
         )
         if await self._should_use_deep_research(question):
             reasoning = await call_deep_research(question=question, type="binary")
+            self.deep_research_results[question] = results
         else:
-            reasoning = await self.get_llm("default", "llm").invoke(prompt)
+            if await self._should_apply_deep_research(question):
+                reasoning = self.deep_research_results[question]
+            else:
+                reasoning = await self.get_llm("default", "llm").invoke(prompt)
         logger.info(f"Reasoning for URL {question.page_url}: {reasoning}")
         binary_prediction: BinaryPrediction = await structure_output(
             reasoning, BinaryPrediction, model=self.get_llm("parser", "llm")
@@ -381,8 +402,12 @@ class AUTOMATIC_BOT(ForecastBot):
         )
         if await self._should_use_deep_research(question):
             reasoning = await call_deep_research(question=question, type="multiple_choice")
+            self.deep_research_results[question] = results
         else:
-            reasoning = await self.get_llm("default", "llm").invoke(prompt)
+            if await self._should_apply_deep_research(question):
+                reasoning = self.deep_research_results[question]
+            else:
+                reasoning = await self.get_llm("default", "llm").invoke(prompt)
         logger.info(f"Reasoning for URL {question.page_url}: {reasoning}")
         predicted_option_list: PredictedOptionList = await structure_output(
             text_to_structure=reasoning,
@@ -456,8 +481,12 @@ class AUTOMATIC_BOT(ForecastBot):
         )
         if await self._should_use_deep_research(question):
             reasoning = await call_deep_research(question=question, type="numeric", lower_bound=lower_bound_message, upper_bound=upper_bound_message)
+            self.deep_research_results[question] = results
         else:
-            reasoning = await self.get_llm("default", "llm").invoke(prompt)
+            if await self._should_apply_deep_research(question):
+                reasoning = self.deep_research_results[question]
+            else:
+                reasoning = await self.get_llm("default", "llm").invoke(prompt)
         logger.info(f"Reasoning for URL {question.page_url}: {reasoning}")
         percentile_list: list[Percentile] = await structure_output(
             reasoning, list[Percentile], model=self.get_llm("parser", "llm")
@@ -527,15 +556,15 @@ if __name__ == "__main__":
 
     # CHANGE RESEARCH REPORTS
     bot = AUTOMATIC_BOT(
-        research_reports_per_question=2,
-        predictions_per_research_report=2,
+        research_reports_per_question=3,
+        predictions_per_research_report=3,
         use_research_summary_to_forecast=False,
         publish_reports_to_metaculus=True,
         folder_to_save_reports_to="reports/",
         skip_previously_forecasted_questions=True,
-        llms={  # choose your model names or GeneralLlm llms here, otherwise defaults will be chosen for you
+        llms={
             "default": GeneralLlm(
-                model="openrouter/openai/gpt-5", #HIGH??  o3‑deep‑research?? gpt5 requires its own api in openrouter? openrouter.ai/openai/gpt-5/api
+                model="openrouter/openai/gpt-5",
                 timeout=60,
                 allowed_tries=2,
                 reasoning_effort="high",
