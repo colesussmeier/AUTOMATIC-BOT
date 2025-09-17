@@ -156,7 +156,7 @@ class AUTOMATIC_BOT(ForecastBot):
             notepad.note_entries["research_steps_count"] = 1
             return False
         elif notepad.note_entries["research_steps_count"] % 3 == 0:
-            logger.info(f"Applying deep researcg results for {notepad.note_entries["research_steps_count"]}")
+            logger.info(f"Applying deep research results for {notepad.note_entries["research_steps_count"]}")
             notepad.note_entries["research_steps_count"] += 1
             return True
         else:
