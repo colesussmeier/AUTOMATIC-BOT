@@ -337,7 +337,7 @@ class AUTOMATIC_BOT(ForecastBot):
         )
         if await self._should_use_deep_research(question):
             reasoning = await call_deep_research(question=question, type="binary")
-            self.deep_research_results[question] = results
+            self.deep_research_results[question] = reasoning
         else:
             if await self._should_apply_deep_research(question):
                 reasoning = self.deep_research_results[question]
@@ -404,7 +404,7 @@ class AUTOMATIC_BOT(ForecastBot):
         )
         if await self._should_use_deep_research(question):
             reasoning = await call_deep_research(question=question, type="multiple_choice")
-            self.deep_research_results[question] = results
+            self.deep_research_results[question] = reasoning
         else:
             if await self._should_apply_deep_research(question):
                 reasoning = self.deep_research_results[question]
@@ -483,7 +483,7 @@ class AUTOMATIC_BOT(ForecastBot):
         )
         if await self._should_use_deep_research(question):
             reasoning = await call_deep_research(question=question, type="numeric", lower_bound=lower_bound_message, upper_bound=upper_bound_message)
-            self.deep_research_results[question] = results
+            self.deep_research_results[question] = reasoning
         else:
             if await self._should_apply_deep_research(question):
                 reasoning = self.deep_research_results[question]
