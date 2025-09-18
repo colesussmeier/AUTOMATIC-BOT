@@ -104,7 +104,7 @@ class AUTOMATIC_BOT(ForecastBot):
     """
     rate_limiter = RefreshingBucketRateLimiter(
         capacity=2,
-        refresh_rate=2,
+        refresh_rate=5,
     )
 
     deep_research_results = {}
@@ -153,10 +153,10 @@ class AUTOMATIC_BOT(ForecastBot):
 
         # apply deep research answer to the result every 3 steps (where 3 is the number of research reports)
         if "research_steps_count" not in notepad.note_entries:
-            notepad.note_entries["research_steps_count"] = 1
-            return False
+            notepad.note_entries["research_steps_count"] = 0
+            return True
         elif notepad.note_entries["research_steps_count"] % 3 == 0:
-            logger.info(f"Applying deep research results for {notepad.note_entries["research_steps_count"]}")
+            logger.info(f"Applying deep research results for step {notepad.note_entries["research_steps_count"]}")
             notepad.note_entries["research_steps_count"] += 1
             return True
         else:
@@ -185,6 +185,23 @@ class AUTOMATIC_BOT(ForecastBot):
                 {question.fine_print}
                 """
             )
+
+            # Run deep research synchronously during the research phase
+            if await self._should_use_deep_research(question):
+                logger.info(f"Running deep research for question: {question.page_url}")
+                if isinstance(question, BinaryQuestion):
+                    deep_research_result = await call_deep_research(question=question, type="binary")
+                elif isinstance(question, MultipleChoiceQuestion):
+                    deep_research_result = await call_deep_research(question=question, type="multiple_choice")
+                elif isinstance(question, NumericQuestion):
+                    upper_bound_message, lower_bound_message = self._create_upper_and_lower_bound_messages(question)
+                    deep_research_result = await call_deep_research(question=question, type="numeric", lower_bound=lower_bound_message, upper_bound=upper_bound_message)
+                else:
+                    deep_research_result = None
+                
+                if deep_research_result:
+                    self.deep_research_results[question] = deep_research_result
+                    logger.info(f"Deep research completed and stored for question: {question.page_url}")
 
             if isinstance(researcher, GeneralLlm):
                 research = await researcher.invoke(prompt)
@@ -335,14 +352,11 @@ class AUTOMATIC_BOT(ForecastBot):
             The last thing you write is your final answer as: "Probability: ZZ%", 0-100
             """
         )
-        if await self._should_use_deep_research(question):
-            reasoning = await call_deep_research(question=question, type="binary")
-            self.deep_research_results[question] = reasoning
+        if await self._should_apply_deep_research(question) and question in self.deep_research_results:
+            reasoning = self.deep_research_results[question]
+            logger.info(f"Using stored deep research results for question: {question.page_url}")
         else:
-            if await self._should_apply_deep_research(question):
-                reasoning = self.deep_research_results[question]
-            else:
-                reasoning = await self.get_llm("default", "llm").invoke(prompt)
+            reasoning = await self.get_llm("default", "llm").invoke(prompt)
         logger.info(f"Reasoning for URL {question.page_url}: {reasoning}")
         binary_prediction: BinaryPrediction = await structure_output(
             reasoning, BinaryPrediction, model=self.get_llm("parser", "llm")
@@ -402,14 +416,11 @@ class AUTOMATIC_BOT(ForecastBot):
             The text you are parsing may prepend these options with some variation of "Option" which you should remove if not part of the option names I just gave you.
             """
         )
-        if await self._should_use_deep_research(question):
-            reasoning = await call_deep_research(question=question, type="multiple_choice")
-            self.deep_research_results[question] = reasoning
+        if await self._should_apply_deep_research(question) and question in self.deep_research_results:
+            reasoning = self.deep_research_results[question]
+            logger.info(f"Using stored deep research results for question: {question.page_url}")
         else:
-            if await self._should_apply_deep_research(question):
-                reasoning = self.deep_research_results[question]
-            else:
-                reasoning = await self.get_llm("default", "llm").invoke(prompt)
+            reasoning = await self.get_llm("default", "llm").invoke(prompt)
         logger.info(f"Reasoning for URL {question.page_url}: {reasoning}")
         predicted_option_list: PredictedOptionList = await structure_output(
             text_to_structure=reasoning,
@@ -481,14 +492,11 @@ class AUTOMATIC_BOT(ForecastBot):
             "
             """
         )
-        if await self._should_use_deep_research(question):
-            reasoning = await call_deep_research(question=question, type="numeric", lower_bound=lower_bound_message, upper_bound=upper_bound_message)
-            self.deep_research_results[question] = reasoning
+        if await self._should_apply_deep_research(question) and question in self.deep_research_results:
+            reasoning = self.deep_research_results[question]
+            logger.info(f"Using stored deep research results for question: {question.page_url}")
         else:
-            if await self._should_apply_deep_research(question):
-                reasoning = self.deep_research_results[question]
-            else:
-                reasoning = await self.get_llm("default", "llm").invoke(prompt)
+            reasoning = await self.get_llm("default", "llm").invoke(prompt)
         logger.info(f"Reasoning for URL {question.page_url}: {reasoning}")
         percentile_list: list[Percentile] = await structure_output(
             reasoning, list[Percentile], model=self.get_llm("parser", "llm")
