@@ -103,11 +103,12 @@ class AUTOMATIC_BOT(ForecastBot):
     Additionally OpenRouter has large rate limits immediately on account creation
     """
     rate_limiter = RefreshingBucketRateLimiter(
-        capacity=2,
+        capacity=1,
         refresh_rate=5,
     )
 
     deep_research_results = {}
+    deep_research_status = {}  # Track deep research status: "running", "completed", or None
 
     _max_concurrent_questions = (
         1  # Set this to whatever works for your search-provider/ai-model rate limits
@@ -154,11 +155,38 @@ class AUTOMATIC_BOT(ForecastBot):
         # apply deep research answer to the result every 3 steps (where 3 is the number of research reports)
         if "research_steps_count" not in notepad.note_entries:
             notepad.note_entries["research_steps_count"] = 0
-            return True
+            should_apply = True
         elif notepad.note_entries["research_steps_count"] % 3 == 0:
-            logger.info(f"Applying deep research results for step {notepad.note_entries["research_steps_count"]}")
-            notepad.note_entries["research_steps_count"] += 1
-            return True
+            logger.info(f"Applying deep research results for step {notepad.note_entries['research_steps_count']}")
+            should_apply = True
+        else:
+            should_apply = False
+        
+        # Only return True if we should apply AND deep research is completed
+        if should_apply:
+            # Check if deep research has been completed for this question
+            if question in self.deep_research_status and self.deep_research_status[question] == "completed":
+                notepad.note_entries["research_steps_count"] += 1
+                return True
+            elif question in self.deep_research_status and self.deep_research_status[question] == "running":
+                logger.info(f"Deep research still running for question: {question.page_url}, waiting...")
+                # Wait for deep research to complete
+                while self.deep_research_status.get(question) == "running":
+                    await asyncio.sleep(1)  # Wait 1 second before checking again
+                
+                # Check if it completed successfully
+                if self.deep_research_status.get(question) == "completed":
+                    notepad.note_entries["research_steps_count"] += 1
+                    return True
+                else:
+                    logger.warning(f"Deep research failed or was cancelled for question: {question.page_url}")
+                    notepad.note_entries["research_steps_count"] += 1
+                    return False
+            else:
+                # No deep research available for this question
+                logger.info(f"No deep research available for question: {question.page_url}")
+                notepad.note_entries["research_steps_count"] += 1
+                return False
         else:
             notepad.note_entries["research_steps_count"] += 1
             return False
@@ -189,6 +217,8 @@ class AUTOMATIC_BOT(ForecastBot):
             # Run deep research synchronously during the research phase
             if await self._should_use_deep_research(question):
                 logger.info(f"Running deep research for question: {question.page_url}")
+                self.deep_research_status[question] = "running"
+                
                 if isinstance(question, BinaryQuestion):
                     deep_research_result = await call_deep_research(question=question, type="binary")
                 elif isinstance(question, MultipleChoiceQuestion):
@@ -201,7 +231,10 @@ class AUTOMATIC_BOT(ForecastBot):
                 
                 if deep_research_result:
                     self.deep_research_results[question] = deep_research_result
+                    self.deep_research_status[question] = "completed"
                     logger.info(f"Deep research completed and stored for question: {question.page_url}")
+                else:
+                    self.deep_research_status[question] = None
 
             if isinstance(researcher, GeneralLlm):
                 research = await researcher.invoke(prompt)
@@ -345,7 +378,7 @@ class AUTOMATIC_BOT(ForecastBot):
             (b) The status quo outcome if nothing changed.
             (c) A brief description of a scenario that results in a No outcome.
             (d) A brief description of a scenario that results in a Yes outcome.
-            (e) How your conclusion relates to current prediction market odds, if at all (markets may not be provided). Otherwise, what research was most important to your conclusion?
+            (e) How your conclusion relates to current prediction market odds, if at all (markets may not be provided). Otherwise, what research is most important to your conclusion?
 
             You write your rationale remembering that good forecasters put extra weight on the status quo outcome since the world changes slowly most of the time.
 
@@ -398,7 +431,7 @@ class AUTOMATIC_BOT(ForecastBot):
             (a) The time left until the outcome to the question is known.
             (b) The status quo outcome if nothing changed.
             (c) A description of an scenario that results in an unexpected outcome.
-            (d) How your conclusion relates to current prediction market odds, if at all (markets may not be provided). Otherwise, what research was most important to your conclusion?
+            (d) How your conclusion relates to current prediction market odds, if at all (markets may not be provided). Otherwise, what research is most important to your conclusion?
 
             You write your rationale remembering that (1) good forecasters put extra weight on the status quo outcome since the world changes slowly most of the time, and (2) good forecasters leave some moderate probability on most options to account for unexpected outcomes.
 
@@ -477,7 +510,7 @@ class AUTOMATIC_BOT(ForecastBot):
             (d) The expectations of experts and markets.
             (e) A brief description of an unexpected scenario that results in a low outcome.
             (f) A brief description of an unexpected scenario that results in a high outcome.
-            (g) How your conclusion relates to current prediction market odds, if at all (markets may not be provided). Otherwise, what research was most important to your conclusion?
+            (g) How your conclusion relates to current prediction market odds, if at all (markets may not be provided). Otherwise, what research is most important to your conclusion?
 
             You remind yourself that good forecasters are humble and set wide 90/10 confidence intervals to account for unknown unknowns.
 
