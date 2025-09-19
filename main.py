@@ -103,8 +103,8 @@ class AUTOMATIC_BOT(ForecastBot):
     Additionally OpenRouter has large rate limits immediately on account creation
     """
     rate_limiter = RefreshingBucketRateLimiter(
-        capacity=2,
-        refresh_rate=5,
+        capacity=1,
+        refresh_rate=3,
     )
 
     deep_research_results = {}
@@ -153,9 +153,10 @@ class AUTOMATIC_BOT(ForecastBot):
 
         # apply deep research answer to the result every 3 steps (where 3 is the number of research reports)
         if "research_steps_count" not in notepad.note_entries:
+            logger.info(f"First instance of deep research being applied")
             notepad.note_entries["research_steps_count"] = 0
             return True
-        elif notepad.note_entries["research_steps_count"] % 3 == 0:
+        elif (notepad.note_entries["research_steps_count"] % 3 == 0) & (notepad.note_entries["research_steps_count"] != 0):
             logger.info(f"Applying deep research results for step {notepad.note_entries["research_steps_count"]}")
             notepad.note_entries["research_steps_count"] += 1
             return True
