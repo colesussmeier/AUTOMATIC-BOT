@@ -103,8 +103,8 @@ class AUTOMATIC_BOT(ForecastBot):
     Additionally OpenRouter has large rate limits immediately on account creation
     """
     rate_limiter = RefreshingBucketRateLimiter(
-        capacity=2,
-        refresh_rate=5,
+        capacity=1,
+        refresh_rate=3,
     )
 
     deep_research_results = {}
@@ -153,9 +153,10 @@ class AUTOMATIC_BOT(ForecastBot):
 
         # apply deep research answer to the result every 3 steps (where 3 is the number of research reports)
         if "research_steps_count" not in notepad.note_entries:
+            logger.info(f"First instance of deep research being applied")
             notepad.note_entries["research_steps_count"] = 0
             return True
-        elif notepad.note_entries["research_steps_count"] % 3 == 0:
+        elif (notepad.note_entries["research_steps_count"] % 3 == 0) & (notepad.note_entries["research_steps_count"] != 0):
             logger.info(f"Applying deep research results for step {notepad.note_entries["research_steps_count"]}")
             notepad.note_entries["research_steps_count"] += 1
             return True
@@ -200,7 +201,7 @@ class AUTOMATIC_BOT(ForecastBot):
                     deep_research_result = None
                 
                 if deep_research_result:
-                    self.deep_research_results[question] = deep_research_result
+                    self.deep_research_results[question.page_url] = deep_research_result
                     logger.info(f"Deep research completed and stored for question: {question.page_url}")
 
             if isinstance(researcher, GeneralLlm):
@@ -352,8 +353,8 @@ class AUTOMATIC_BOT(ForecastBot):
             The last thing you write is your final answer as: "Probability: ZZ%", 0-100
             """
         )
-        if await self._should_apply_deep_research(question) and question in self.deep_research_results:
-            reasoning = self.deep_research_results[question]
+        if await self._should_apply_deep_research(question) and question.page_url in self.deep_research_results:
+            reasoning = self.deep_research_results[question.page_url]
             logger.info(f"Using stored deep research results for question: {question.page_url}")
         else:
             reasoning = await self.get_llm("default", "llm").invoke(prompt)
@@ -416,8 +417,8 @@ class AUTOMATIC_BOT(ForecastBot):
             The text you are parsing may prepend these options with some variation of "Option" which you should remove if not part of the option names I just gave you.
             """
         )
-        if await self._should_apply_deep_research(question) and question in self.deep_research_results:
-            reasoning = self.deep_research_results[question]
+        if await self._should_apply_deep_research(question) and question.page_url in self.deep_research_results:
+            reasoning = self.deep_research_results[question.page_url]
             logger.info(f"Using stored deep research results for question: {question.page_url}")
         else:
             reasoning = await self.get_llm("default", "llm").invoke(prompt)
@@ -492,8 +493,8 @@ class AUTOMATIC_BOT(ForecastBot):
             "
             """
         )
-        if await self._should_apply_deep_research(question) and question in self.deep_research_results:
-            reasoning = self.deep_research_results[question]
+        if await self._should_apply_deep_research(question) and question.page_url in self.deep_research_results:
+            reasoning = self.deep_research_results[question.page_url]
             logger.info(f"Using stored deep research results for question: {question.page_url}")
         else:
             reasoning = await self.get_llm("default", "llm").invoke(prompt)
