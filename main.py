@@ -110,7 +110,7 @@ class AUTOMATIC_BOT(ForecastBot):
     deep_research_results = {}
 
     _max_concurrent_questions = (
-        1  # Set this to whatever works for your search-provider/ai-model rate limits
+        2  # Set this to whatever works for your search-provider/ai-model rate limits
     )
     _concurrency_limiter = asyncio.Semaphore(_max_concurrent_questions)
 
