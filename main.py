@@ -575,11 +575,10 @@ if __name__ == "__main__":
         skip_previously_forecasted_questions=True,
         llms={
             "default": GeneralLlm(
-                model="openrouter/openai/gpt-5",
+                model="openrouter/openai/gpt-5.2",
                 timeout=60,
                 allowed_tries=2,
-                reasoning_effort="high",
-                verbosity="high"
+                reasoning_effort="high"
             ),
             "mini": GeneralLlm(
                 model="openrouter/openai/gpt-5-mini",
@@ -587,9 +586,9 @@ if __name__ == "__main__":
                 allowed_tries=2,
                 reasoning_effort="high"
             ),
-            "summarizer": "openrouter/openai/gpt-5",
+            "summarizer": "openrouter/openai/gpt-5.2",
             "researcher": GeneralLlm(
-                model="openrouter/openai/gpt-5",
+                model="openrouter/openai/gpt-5.2",
                 timeout=60,
                 allowed_tries=2,
                 reasoning_effort="high",
