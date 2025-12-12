@@ -576,7 +576,7 @@ if __name__ == "__main__":
         llms={
             "default": GeneralLlm(
                 model="openrouter/openai/gpt-5.2",
-                timeout=180,
+                timeout=600,
                 allowed_tries=2,
                 reasoning_effort="high",
                 tools=[
@@ -591,12 +591,12 @@ if __name__ == "__main__":
             ),
             "summarizer": GeneralLlm(
                 model="openrouter/openai/gpt-5.2",
-                timeout=180,
+                timeout=600,
                 allowed_tries=2
             ),
             "researcher": GeneralLlm(
                 model="openrouter/openai/gpt-5.2",
-                timeout=180,
+                timeout=600,
                 allowed_tries=2,
                 reasoning_effort="high",
                 tools=[
