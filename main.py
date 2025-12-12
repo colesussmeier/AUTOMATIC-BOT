@@ -586,7 +586,12 @@ if __name__ == "__main__":
                 allowed_tries=2,
                 reasoning_effort="high"
             ),
-            "summarizer": "openrouter/openai/gpt-5.2",
+            "summarizer": GeneralLlm(
+                model="openrouter/openai/gpt-5.2",
+                timeout=120,
+                allowed_tries=2,
+                reasoning_effort="high"
+            ),
             "researcher": GeneralLlm(
                 model="openrouter/openai/gpt-5.2",
                 timeout=120,
