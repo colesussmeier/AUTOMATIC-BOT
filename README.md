@@ -1,42 +1,41 @@
-# AUTOMATIC BOT
+# AUTOMATIC BOT Q4 2025
 
-## Basic Info
-- Code was taken from the template bot provided by Metaculus (default bot not the few-dependency version)
-- I'm using uv instead of poetry for package management since uv is awesome. I changed the lock file, and I also had to modify the yaml files in the .github/workflows directory
+This project is a deep research framework for predicting the future and competing in the [$58,000 Metaculus Artificial Intelligence Benchmark](https://www.metaculus.com/aib/2025/fall/)
 
 ## Stack
-- Use GPT-5 for most things. Standard system prompt, nothing special
-- No Perplexity, as it is not competitive. For search I'm just going to use AskNews and Adjacent
-- May add in Grok-4 since it has access to Twitter, and it does well on the AA-LCR (Long Context Reasoning) benchmark (see 8th chart in intelligence evaluation section of https://artificialanalysis.ai/). Its also expensive and not included with credits so its not high priority
+- Research/ Prediction Bots: Mostly GPT-5. Standard system prompts, nothing special here
+- Deep research: Used OpenAI's deep research with O4-mini API. This needed a custom implementation because it is not available through Openrouter
+- Search: No Perplexity, as I don't think it is competitive. I used default search tools from model providers, but also experimented with AskNews
+- Prediction Markets: I used the Adjacent News API and Manifold market search to find any markets relating to the current question
 
-## Adjacent News
-Based on example questions I've seen, using the Adjacent search function will only be useful once in a while. My process will go:
+## Deep Research Model
+Since deep research responses cannot be integrated through LightLLM/ forecasting-tools, I used the notepad functionality of the template_bot class to hack the deep research predictions into the final forecast. 
+Deep research predictions were weighted heavier than standard predictions. Deep research takes a while to complete so I had to be careful about race conditions.
 
-1. LLM call that first formulates a search query or two to submit to the adj API
+## Prediction Markets
+Logic for incorporating prediction market data:
+
+1. LLM call that first formulates a search query or two to submit to the Adjacent/ Manifold API
 
 2. Filter responses such that only active markets are returned (end_date > todays date)
 
-3. Filter by volume/ oi if its too low
+3. Filter by volume/ open interest... we only want to consider markets that have sufficient trading volume
 
 4. Only return relevant info of relevant markets
 
 5. These results can then be appended to the research report
 
-## GPT-5
-
-- litellm and openrouter support the text completion API for openai, not the responses API
-
-- I only want to use the "high" setting for research agents, and maybe a high verbosity level. The argument for reasoning level is reasoning_effort, and this needs to get passed through the Metaculus forecasting tools wrapper, litellm, and then to openrouter and openai. Not sure if verbosity levels can be passed through
-
-- There is a github issue on litellm for passing custom openai params here: https://github.com/BerriAI/litellm/issues/13571. This is needed for verbosity level and maybe even reasoning level, I'm not sure yet but this could be a problem
-
-## AskNews
-
-- We can use the deep search agent with the Metaculus tier API key, but cant add in sources other than "asknews", can only use "deepseek-basic", and max depth is limited to 2
-
 ## Random Notes
+- Project is based on the template bot provided by Metaculus
+
+- I'm using uv instead of poetry for package management since uv is awesome. I changed the toml file, and I also had to modify the yaml files in the .github/workflows directory
+
 - The few-dependency version of the bot provided by Metaculus did not handle generating distributions / extracting predictions the same way the default one does (default uses forecasting-tools and an llm call which I think is easier and probably better)
 
-- Not sure how quickly I'll run out of credits yet. I'll have to test this over the next week or so
+- Metaculus provided API credits for OAI/ Anthropic models through Openrouter. This did not cover deep research and I ended up running out of credits. Github Actions is also expensive. In total, this used almost $1000 dollars in API credits, but I expect the winnings from the competition to comfortably cover any out of pocket expenses
 
-- if o3‑deep‑research works as a research agent it wont need asknews
+## Future Improvements
+- Integrating tool use directly into models will probably work better
+- OpenAI's deep reseach model worked well, but I think that I can do better myself
+- I'd like to try a custom weighting scheme analogous to an ensemble of ensembles. Distribution generation could also use some work
+- GPU poor :( -- Need more compute!
