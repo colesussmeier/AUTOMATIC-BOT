@@ -102,6 +102,7 @@ class AUTOMATIC_BOT(ForecastBot):
                 You are an assistant to a superforecaster.
                 The superforecaster will give you a question they intend to forecast on.
                 To be a great assistant, you generate a concise but detailed rundown of the most relevant news, including if the question would resolve Yes or No based on current information.
+                If the current question is synced to an identical question on Metaculus, assume that the event could not have occured prior to the day that the identical question was opened. 
                 You do not produce forecasts yourself, you do the research that the forecaster will need to come to a conclusion.
 
                 Question:
@@ -110,7 +111,11 @@ class AUTOMATIC_BOT(ForecastBot):
                 This question's outcome will be determined by the specific criteria below:
                 {question.resolution_criteria}
 
+                Fine print:
                 {question.fine_print}
+
+                Background info:
+                {question.background_info}
                 """
             )
 

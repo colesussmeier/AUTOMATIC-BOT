@@ -44,6 +44,7 @@ def format_prompt(question: str, type: str, lower_bound: str = None, upper_bound
         prompt = clean_indents(
             f"""
             You are a professional forecaster interviewing for a job. You will do the research required to answer the following question, and then provide the best possible answer.
+            If the current question is synced to an identical question on Metaculus, assume that the event could not have occured prior to the day that the identical question was opened. 
 
             Your interview question is:
             {question.question_text}
@@ -75,6 +76,7 @@ def format_prompt(question: str, type: str, lower_bound: str = None, upper_bound
         prompt = clean_indents(
             f"""
             You are a professional forecaster interviewing for a job. You will do the research required to answer the following question, and then provide the best possible answer.
+            If the current question is synced to an identical question on Metaculus, assume that the event could not have occured prior to the day that the identical question was opened. 
 
             Your interview question is:
             {question.question_text}
@@ -111,6 +113,7 @@ def format_prompt(question: str, type: str, lower_bound: str = None, upper_bound
         prompt = clean_indents(
             f"""
             You are a professional forecaster interviewing for a job. You will do the research required to answer the following question, and then provide the best possible answer.
+            If the current question is synced to an identical question on Metaculus, assume that the event could not have occured prior to the day that the identical question was opened. 
 
             Your interview question is:
             {question.question_text}
