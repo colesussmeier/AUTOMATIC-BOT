@@ -540,7 +540,7 @@ if __name__ == "__main__":
 
     client = MetaculusClient()
 
-    client.CURRENT_METACULUS_CUP_ID = 32921
+    client.CURRENT_AI_COMPETITION_ID = 32916
 
     if run_mode == "tournament":
         seasonal_tournament_reports = asyncio.run(
