@@ -36,6 +36,6 @@ Logic for incorporating prediction market data:
 
 ## Future Improvements
 - Integrating tool use directly into models will probably work better
-- OpenAI's deep reseach model worked well, but I think that I can do better myself
+- OpenAI's deep research model worked well, but I think that I can do better myself
 - I'd like to try a custom weighting scheme analogous to an ensemble of ensembles. Distribution generation could also use some work
-- GPU poor :( -- Need more compute!
+- GPU poor :( -- Needs more compute
