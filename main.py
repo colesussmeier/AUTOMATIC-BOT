@@ -37,7 +37,7 @@ class AUTOMATIC_BOT(ForecastBot):
     deep_research_results = {}
 
     _max_concurrent_questions = (
-        2
+        1
     )
     _concurrency_limiter = asyncio.Semaphore(_max_concurrent_questions)
 
@@ -539,6 +539,8 @@ if __name__ == "__main__":
     )
 
     client = MetaculusClient()
+
+    client.CURRENT_METACULUS_CUP_ID = 32921
 
     if run_mode == "tournament":
         seasonal_tournament_reports = asyncio.run(
