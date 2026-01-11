@@ -11,7 +11,7 @@ from forecasting_tools import (
     BinaryQuestion,
     ForecastBot,
     GeneralLlm,
-    MetaculusApi,
+    MetaculusClient,
     MetaculusQuestion,
     MultipleChoiceQuestion,
     NumericDistribution,
@@ -538,10 +538,12 @@ if __name__ == "__main__":
         },
     )
 
+    client = MetaculusClient()
+
     if run_mode == "tournament":
         seasonal_tournament_reports = asyncio.run(
             bot.forecast_on_tournament(
-                MetaculusApi.CURRENT_AI_COMPETITION_ID, return_exceptions=True
+                client.CURRENT_AI_COMPETITION_ID, return_exceptions=True
             )
         )
         """
@@ -557,7 +559,7 @@ if __name__ == "__main__":
         bot.skip_previously_forecasted_questions = False
         forecast_reports = asyncio.run(
             bot.forecast_on_tournament(
-                MetaculusApi.CURRENT_METACULUS_CUP_ID, return_exceptions=True
+                client.CURRENT_METACULUS_CUP_ID, return_exceptions=True
             )
         )
     elif run_mode == "test_questions":
@@ -576,7 +578,7 @@ if __name__ == "__main__":
 
         bot.skip_previously_forecasted_questions = False
         questions = [
-            MetaculusApi.get_question_by_url(question_url)
+            client.get_question_by_url(question_url)
             for question_url in EXAMPLE_QUESTIONS
         ]
         forecast_reports = asyncio.run(
